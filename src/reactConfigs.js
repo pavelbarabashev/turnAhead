@@ -1,0 +1,67 @@
+const configConfetti = {
+  angle: 90,
+  spread: 360,
+  startVelocity: 40,
+  elementCount: 70,
+  dragFriction: 0.12,
+  duration: 3000,
+  stagger: 3,
+  width: "10px",
+  height: "10px",
+  perspective: "500px",
+  colors: ["#a864fd", "#29cdff", "#78ff44", "#ff718d", "#fdff6a"],
+};
+
+const configMonochrome = {
+  angle: 90,
+  spread: 360,
+  startVelocity: 40,
+  elementCount: 70,
+  dragFriction: 0.12,
+  duration: 3000,
+  stagger: "46",
+  width: "90px",
+  height: "91px",
+  perspective: "255px",
+  colors: ["#000", "#333", "#666"],
+};
+const configColor1 = {
+  angle: 90,
+  spread: 360,
+  startVelocity: 40,
+  elementCount: 70,
+  dragFriction: 0.12,
+  duration: 3000,
+  stagger: "46",
+  width: "40px",
+  height: "40px",
+  perspective: "1000px",
+  colors: ["#7785AC", "#5B2A86", "#9AC6C5"],
+};
+const configColor2 = {
+  angle: 90,
+  spread: 360,
+  startVelocity: 40,
+  elementCount: 70,
+  dragFriction: 0.12,
+  duration: 3000,
+  stagger: "46",
+  width: "20px",
+  height: "20px",
+  perspective: "1000px",
+  colors: ["#89A1EF", "#EF9CDA", "#FECEF1"],
+};
+const configColor3 = {
+  angle: 90,
+  spread: 360,
+  startVelocity: 100,
+  elementCount: 70,
+  dragFriction: 0.12,
+  duration: 3000,
+  stagger: "46",
+  width: "100px",
+  height: "10px",
+  perspective: "1000px",
+  colors: ["#F7B801", "#F18701", "#F35B04"],
+};
+module.exports = { configConfetti, configMonochrome, configColor1,configColor2, configColor3};

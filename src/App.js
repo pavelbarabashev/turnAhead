@@ -15,12 +15,35 @@ import * as handpose from "@tensorflow-models/handpose";
 import Webcam from "react-webcam";
 import "./App.css";
 import { drawHand } from "./utilities";
-
-///////// NEW STUFF IMPORTS
 import * as fp from "fingerpose";
-import victory from "./victory.png";
-import thumbs_up from "./thumbs_up.png";
-///////// NEW STUFF IMPORTS
+
+// React Decoration Imports
+import Confetti from "react-dom-confetti";
+import { configConfetti, configMonochrome, configColor1, configColor2, configColor3 } from "./reactConfigs";
+
+///////// PNG Imports
+import open_hand from "./png/open_hand.png";
+import victory from "./png/victory.png";
+import pointer from "./png/pointer.png";
+import rad from "./png/rad.png";
+import thumbs_up from "./png/thumbs_up.png";
+import thumbs_down from "./png/thumbs_down.png";
+import fist from "./png/fist.png";
+import ReactRain from "react-rain-animation"
+import "react-rain-animation/lib/style.css"
+///////// Gesture Imports
+import {
+  OpenHandGesture,
+  VictoryGesture,
+  PointerGesture,
+  RadGesture,
+  ThumbsUpGesture,
+  ThumbsDownGesture,
+  FistGesture,
+} from "./Gestures";
+import './styles/index.scss'
+
+import { HandDetector } from "@tensorflow-models/handpose/dist/hand";
 
 function App() {
   const webcamRef = useRef(null);
@@ -28,20 +51,49 @@ function App() {
 
   ///////// NEW STUFF ADDED STATE HOOK
   const [emoji, setEmoji] = useState(null);
-  const images = { thumbs_up: thumbs_up, victory: victory };
+  const [explosion, setExplosion] = useState(false);
+  let initialGestureArray = []
+  for (let i=0;i<10;i++){
+    initialGestureArray.push("")
+  }
+  const [gestureQueue, setGestures] = useState(initialGestureArray)
+  // const [timerRingOffset,settimerRingOffset] = useState(0)
+  // const [gestureDuration,setGestureDuration] = useState(0)
+  const [explosionConfig, setExplosionConfig] = useState(null);
+  const [rain,setRain] = useState(0);
+  const images = {
+    open_hand: open_hand,
+    victory: victory,
+    pointer: pointer,
+    rad: rad,
+    thumbs_up: thumbs_up,
+    thumbs_down: thumbs_down,
+    fist: fist,
+  };
+
+  // const $timerRing = document.querySelector('#timer-ring')
+  // const $timerRingCircle = document.querySelector('#timer-ring-circle')
+  const radius = 38
+  const circumference = (radius * 2 * Math.PI)
+
+  // $timerRingCircle.style.strokeDasharray = `${circumference} ${circumference}`
+  // $timerRingCircle.style.strokeDashoffset = `${circumference}`  
+  
   ///////// NEW STUFF ADDED STATE HOOK
 
   const runHandpose = async () => {
-    const net = await handpose.load();
+    console.log("Loading handpose model...");
+    const handposeModel = await handpose.load();
     console.log("Handpose model loaded.");
     //  Loop and detect hands
     setInterval(() => {
-      detect(net);
-    }, 10);
+      detect(handposeModel);
+  }, 10);
   };
 
-  const detect = async (net) => {
+  const detect = async (handposeModel) => {
     // Check data is available
+    const predictionStartTS = Date.now()
     if (
       typeof webcamRef.current !== "undefined" &&
       webcamRef.current !== null &&
@@ -61,19 +113,35 @@ function App() {
       canvasRef.current.height = videoHeight;
 
       // Make Detections
-      const hand = await net.estimateHands(video);
+      // 2nd argument false: flipHorizontal
+      const hand = await handposeModel.estimateHands(video, false);
       // console.log(hand);
 
       ///////// NEW STUFF ADDED GESTURE HANDLING
 
       if (hand.length > 0) {
+        // GE: Gesture Estimator
         const GE = new fp.GestureEstimator([
-          fp.Gestures.VictoryGesture,
-          fp.Gestures.ThumbsUpGesture,
+          OpenHandGesture,
+          VictoryGesture,
+          // PointerGesture,
+          RadGesture,
+          ThumbsUpGesture,
+          // ThumbsDownGesture,
+          FistGesture,
         ]);
-        const gesture = await GE.estimate(hand[0].landmarks, 4);
-        if (gesture.gestures !== undefined && gesture.gestures.length > 0) {
-          // console.log(gesture.gestures);
+
+        // 2nd arg is the minimum score it's looking for
+        const gesture = await GE.estimate(hand[0].landmarks, 7);
+        if (gesture.gestures === undefined) {
+          console.log("no hand");
+          setEmoji("");
+          // setGestureDuration(0);
+          setGestures((gestureQueue)=>{
+            let prevGestures = gestureQueue.slice(1)
+            prevGestures.push("")
+            return(prevGestures)})
+        } else if (gesture.gestures.length > 0) {
 
           const confidence = gesture.gestures.map(
             (prediction) => prediction.confidence
@@ -81,23 +149,142 @@ function App() {
           const maxConfidence = confidence.indexOf(
             Math.max.apply(null, confidence)
           );
-          // console.log(gesture.gestures[maxConfidence].name);
-          setEmoji(gesture.gestures[maxConfidence].name);
-          console.log(emoji);
-        }
-      }
 
+          // MOST LIKELY CURRENT GESTURE IS gesture.gestures[maxConfidence].name
+          // Ideally our gesturesQueue would update the end with this...and remove the 0 index.... but it doesn't for some reason.
+          
+          // let prevGestures = gestureQueue.slice(1);
+          // prevGestures.push(gesture.gestures[maxConfidence].name)
+          setGestures((gestureQueue)=>{
+            let prevGestures = gestureQueue.slice(1)
+            prevGestures.push(gesture.gestures[maxConfidence].name)
+          console.log(gestureQueue)
+            return(prevGestures)})
+          // console.log(gestureQueue)
+          
+          //The goal is then to take the mode of the first half and second half to determine if gesture changed.
+        //   function mode(arr){
+        //     return arr.sort((a,b) =>
+        //           arr.filter(v => v===a).length
+        //         - arr.filter(v => v===b).length
+        //     ).pop();
+        // }
+        // prevGestureMode = mode(gesturesQueue.slice(0,5))
+        // currentGestureMode = mode(gesturesQueue.slice(5))
+        //  then we want to use these modes to see if we add to duration timer or change background/emoji in response
+          //if (prevGesture===lastGesture){
+            // add to duration timer
+            // const deltaTime = Date.now() - predictionStartTS
+            // gestureDuration += deltaTime
+          // }
+          //if (prevGesture!==lastGesture){
+            // setEmoji/Canvas Element
+          // }
+          setEmoji(gesture.gestures[maxConfidence].name);
+
+          switch (gesture.gestures[maxConfidence].name) {
+            case "open_hand":
+              setExplosionConfig(configConfetti);
+              setExplosion(true);
+              break;
+            case "rad":
+              setExplosionConfig(configMonochrome);
+              setExplosion(true);
+              break;
+            case "victory":
+              setExplosionConfig(configColor1);
+              setExplosion(true);
+              break;
+            case "thumbs_up":
+              setExplosionConfig(configColor2);
+              setExplosion(true);
+              break;
+            case "fist":
+              // setExplosionConfig(configColor3);
+              // setExplosion(true);
+              setRain(rain+5)
+              break
+            default:
+              break;
+          }
+        }
+      }else{
+        setEmoji("")
+        setGestures((gestureQueue)=>{
+          let prevGestures = gestureQueue.slice(1)
+          prevGestures.push("")
+          return(prevGestures)})
+      }
       ///////// NEW STUFF ADDED GESTURE HANDLING
 
       // Draw mesh
       const ctx = canvasRef.current.getContext("2d");
-      ctx.translate(canvasRef.current.width,0)
-      ctx.scale(-1,1)
+      ctx.translate(canvasRef.current.width, 0);
+      ctx.scale(-1, 1);
       drawHand(hand, ctx);
+      
     }
   };
 
-  useEffect(()=>{runHandpose()},[]);
+  useEffect(() => {
+    runHandpose();
+  },[]);
+
+  useEffect(()=>{
+    setExplosion(false)
+    setRain(0)
+  },[emoji])
+  const renderAnimations = (gesture) =>{
+    // let output
+    // switch (gesture) {
+    // case "closed_hand":
+    //   return(
+    //     <Confetti active={false} config={configConfetti} />
+    //   )
+    // case "open_hand":
+    //   return(
+    //     <Confetti active={true} config={configConfetti} />
+    //   )
+    // default:
+    //  break
+    // }
+    // setExplosion(false)
+    return(
+      <div>
+      <Confetti active={explosion} config={explosionConfig} />
+      </div>
+    )
+  }
+  const renderCircleTimer=()=>{ //I don't think we really need this... the smoothed gesture array makes more sense
+    return(
+    <div className="player-hand-container">
+    {/* <!-- shows the current recognized gesture --> */}
+    <div id="player-hand" className="player-hand"></div>
+
+    {/* <!-- show the timer progress --> */}
+    <svg id="timer-ring" className="timer-ring" height="100" width="100" strokeDasharray={circumference+" "+circumference}>
+      <circle
+        className="timer-ring-circle"
+        strokeWidth="6"
+        stroke="white"
+        fill="transparent"
+        r="38"
+        cx="50"
+        cy="50"
+      />
+      <circle
+        id="timer-ring-circle"
+        className="timer-ring-circle"
+        strokeWidth="6"
+        stroke="blue"
+        fill="transparent"
+        r="38"
+        cx="50"
+        cy="50"
+      />
+    </svg>
+  </div>)
+  }
 
   return (
     <div className="App">
@@ -132,10 +319,12 @@ function App() {
             height: 480,
           }}
         />
+        
         {/* NEW STUFF */}
         {emoji !== null ? (
           <img
             src={images[emoji]}
+            alt="No Gesture Found"
             style={{
               position: "absolute",
               marginLeft: "auto",
@@ -149,7 +338,12 @@ function App() {
           />
         ) : (
           ""
-        )}
+        )}  
+        {/* <Confetti active={explosion} config={configConfetti} /> */}
+        {renderAnimations(emoji)}
+        <ReactRain numDrops = {500}/>
+
+        {/* <Confetti active={explosion} config={explosionConfig} /> */}
 
         {/* NEW STUFF */}
       </header>

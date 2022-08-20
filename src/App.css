@@ -1,5 +1,12 @@
 .App {
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+body{
+  background-color: black;
 }
 
 .App-logo {
@@ -7,11 +14,6 @@
   pointer-events: none;
 }
 
-/* @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-} */
 
 .App-header {
   background-color: black;
@@ -24,15 +26,30 @@
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+#webcam{
+  border: solid 4px white;
+  width: 600px;
+  height: fit-content
 }
-/* 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-} */
+canvas{
+  display: none;
+}
+
+#timer{
+  color: white;
+}
+img{
+  width: 200px;
+  height: 200px;
+}
+
+#img-view{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+}
+
+#video-replay{
+  display: none;
+}

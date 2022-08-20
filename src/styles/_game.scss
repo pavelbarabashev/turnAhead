@@ -92,26 +92,26 @@
 //   left: 0;
 // }
 
-.player-hand-container {
-  position: absolute;
-  margin-left: "auto";
-  margin-right: "auto";
-  left: 400;
-  bottom: 500;
-  right: 0;
-  align-items: "center";
-  height: 100;}
+// .player-hand-container {
+//   position: absolute;
+//   margin-left: "auto";
+//   margin-right: "auto";
+//   left: 400;
+//   bottom: 500;
+//   right: 0;
+//   align-items: "center";
+//   height: 100;}
 
-.player-hand {
-  position: absolute;
-  top: 2px;
-  right: 1px;
-  width: 100px;
-  height: 100px;
-  text-align: center;
-  font-size: 42px;
-  line-height: 100px;
-}
+// .player-hand {
+//   position: absolute;
+//   top: 2px;
+//   right: 1px;
+//   width: 100px;
+//   height: 100px;
+//   text-align: center;
+//   font-size: 42px;
+//   line-height: 100px;
+// }
 
 // .player-hand-zoom {
 //   animation: handZoom .5s;
@@ -124,8 +124,4 @@
 //   100% { font-size: 42px; }
 // }
 
-.timer-ring-circle {
-  transition: stroke-dashoffset 0.1s;
-  transform: rotate(-90deg);
-  transform-origin: 50% 50%;
-}
+

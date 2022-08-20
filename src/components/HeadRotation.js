@@ -31,7 +31,9 @@ export const HeadRotation = () => {
           });
           const url = URL.createObjectURL(blob);
           const video = document.getElementById("video-replay");
-        //   axios.post(){}
+          axios.post("http://localhost:8000/api/v1/video", {blob}).then((response)=>{
+            console.log(response)
+          }).catch((error)=>{console.log(error)})
           
           video.src = url
         }
@@ -73,19 +75,16 @@ export const HeadRotation = () => {
        
   
     return (
-      <div className="d-flex flex-column align-items-center">
+      <div className="container-for-vid">
         <Webcam audio={false} ref={webcamRef} height={400} width={500}/>
         <video id="video-replay" height="400" width="500" controls></video>
-        {capturing ? (
-          <button className="btn btn-danger" onClick={handleStopCaptureClick}>Stop Capture</button>
-        ) : (
-          <button className="btn btn-danger" onClick={()=>{ setIsTimerVisible(true);
-            setTimeout(handleStartCaptureClick, 3000);}}>Start Capture</button>
-        )}
+        {!capturing && <button className="btn btn-danger" onClick={()=>{ setIsTimerVisible(true);
+            setTimeout(handleStartCaptureClick, 3000);}}>Start Capture</button>}
+            {capturing&& <p id="recording">Recording...</p>}
         {isTimerVisible=== true && <Timer setIsTimerVisible={setIsTimerVisible}></Timer>}
         {recordedChunks.length > 0 && (
           <div>
-            <button onClick={handleDownload}>Download</button>
+            <button onClick={handleDownload}>Send</button>
           </div>
         )}
       </div>

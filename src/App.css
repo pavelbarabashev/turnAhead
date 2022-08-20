@@ -53,3 +53,13 @@ img{
 #video-replay{
   display: none;
 }
+.container-for-vid{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#recording{
+color: wheat;
+}
